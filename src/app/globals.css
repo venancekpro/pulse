@@ -2,14 +2,18 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+  Palette & atmosphère alignées sur lumis-web-app
+  (bg #060a12, accent #00d4b4, secondaire #1858e4, bordures blanc 8 %)
+*/
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-dm-sans), "DM Sans", ui-sans-serif, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,92 +43,267 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.67);
+  --radius-md: calc(var(--radius) * 0.83);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.33);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.4);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --lumis-bg-base: #060a12;
+  --lumis-accent: #00d4b4;
+  --lumis-accent-ring: color-mix(in srgb, var(--lumis-accent) 35%, transparent);
+  --lumis-accent-dim: #00a890;
+  --lumis-secondary: #1858e4;
+  --lumis-border: rgba(255, 255, 255, 0.08);
+  --lumis-text-dim: rgba(15, 23, 42, 0.55);
+  --lumis-card-glass: rgba(0, 0, 0, 0.4);
+  --shadow-lumis-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lumis-card-hover: 0 8px 40px rgba(0, 0, 0, 0.6);
+  --shadow-lumis-accent: 0 0 20px rgba(0, 212, 180, 0.25);
+  --lumis-glass-effect: blur(32px) saturate(180%);
+  --lumis-transition-fast: 150ms ease;
+  --lumis-transition-ui: 200ms ease;
+  --lumis-transition-theme: 700ms ease;
+
+  /* Canvas identique loader / ShellLoader (.pulse-loader-screen) */
+  --pulse-lumis-canvas: radial-gradient(
+      ellipse 72% 58% at 10% 52%,
+      rgba(0, 212, 180, 0.26) 0%,
+      transparent 68%
+    ),
+    radial-gradient(ellipse 58% 68% at 90% 18%, rgba(24, 88, 228, 0.22) 0%, transparent 64%),
+    radial-gradient(ellipse 42% 32% at 46% 54%, rgba(0, 180, 150, 0.09) 0%, transparent 58%),
+    radial-gradient(ellipse 62% 48% at 82% 88%, rgba(58, 8, 128, 0.2) 0%, transparent 62%), #060a12;
+
+  --load-critique: #f43f5e;
+  --load-elevee: #f5a623;
+  --load-moderee: #00d4b4;
+  --load-normale: #34d399;
+  --pole-front: #a78bfa;
+  --pole-back: #54a0ff;
+  --pole-devops: #fb923c;
+  --pole-ux: #f472b6;
+  --role-admin: #00d4b4;
+  --role-viewer: #94a3b8;
+  --pulse-primary: #00d4b4;
+  --pulse-dark: #060a12;
+  --accent-brand: #00d4b4;
+  --btn-glow: rgba(0, 212, 180, 0.45);
+
+  /* KPI — accents sémantiques (lisibles clair / sombre) */
+  --kpi-members: #00a88e;
+  --kpi-members-soft: rgba(0, 212, 180, 0.12);
+  --kpi-members-glow: rgba(0, 212, 180, 0.2);
+  --kpi-projects: #1858e4;
+  --kpi-projects-soft: rgba(24, 88, 228, 0.1);
+  --kpi-projects-glow: rgba(91, 141, 239, 0.22);
+  --kpi-overload-safe: #059669;
+  --kpi-overload-warn: #d97706;
+  --kpi-overload-alert: #e11d48;
+  --kpi-activity: #7c3aed;
+  --kpi-activity-soft: rgba(124, 58, 237, 0.1);
+  --kpi-activity-glow: rgba(167, 139, 250, 0.2);
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: rgba(255, 255, 255, 0.85);
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #00d4b4;
+  --primary-foreground: #060a12;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #e0f2fe;
+  --accent-foreground: #0f172a;
+  --destructive: oklch(0.55 0.22 25);
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #00d4b4;
+  --chart-1: #00d4b4;
+  --chart-2: #1858e4;
+  --chart-3: oklch(0.45 0.1 265);
+  --chart-4: oklch(0.38 0.08 265);
+  --chart-5: oklch(0.28 0.06 265);
+  --radius: 12px;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #00d4b4;
+  --sidebar-primary-foreground: #060a12;
+  --sidebar-accent: #e0f2fe;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-ring: #00d4b4;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --lumis-text-dim: rgba(255, 255, 255, 0.4);
+  --background: #060a12;
+  --foreground: #ffffff;
+  --card: rgba(0, 0, 0, 0.45);
+  --card-foreground: #f0f2f4;
+  --popover: rgba(15, 18, 26, 0.94);
+  --popover-foreground: #f0f2f4;
+  --primary: #00d4b4;
+  --primary-foreground: #060a12;
+  --secondary: rgba(24, 88, 228, 0.22);
+  --secondary-foreground: #e8eef8;
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: rgba(255, 255, 255, 0.45);
+  --accent: rgba(0, 212, 180, 0.12);
+  --accent-foreground: #ccfbf1;
+  --destructive: #ff6b6b;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(0, 212, 180, 0.45);
+  --chart-1: #00d4b4;
+  --chart-2: #5b8def;
+  --chart-3: #a78bfa;
+  --chart-4: #f472b6;
+  --chart-5: #f5a623;
+  --sidebar: rgba(8, 11, 20, 0.72);
+  --sidebar-foreground: rgba(255, 255, 255, 0.92);
+  --sidebar-primary: #00d4b4;
+  --sidebar-primary-foreground: #060a12;
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: #f0f2f4;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(0, 212, 180, 0.4);
+  --btn-glow: rgba(0, 212, 180, 0.45);
+  --kpi-members: #2ee8c7;
+  --kpi-members-soft: rgba(0, 212, 180, 0.12);
+  --kpi-members-glow: rgba(0, 212, 180, 0.28);
+  --kpi-projects: #6b9cff;
+  --kpi-projects-soft: rgba(91, 141, 239, 0.14);
+  --kpi-projects-glow: rgba(91, 141, 239, 0.28);
+  --kpi-overload-safe: #5ee9b5;
+  --kpi-overload-warn: #fbbf24;
+  --kpi-overload-alert: #fb7185;
+  --kpi-activity: #c4b5fd;
+  --kpi-activity-soft: rgba(167, 139, 250, 0.14);
+  --kpi-activity-glow: rgba(167, 139, 250, 0.26);
+}
+
+/* Sidebar : panneau bleu‑nuit, contrasté avec le canvas teal / violet */
+.lumis-sidebar-panel {
+  background: linear-gradient(
+    175deg,
+    rgba(244, 247, 252, 0.98) 0%,
+    rgba(232, 238, 248, 0.96) 45%,
+    rgba(226, 234, 248, 0.99) 100%
+  );
+  border-right: 1px solid rgba(24, 72, 180, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.dark .lumis-sidebar-panel {
+  background: linear-gradient(
+    168deg,
+    rgba(14, 22, 42, 0.96) 0%,
+    rgba(10, 16, 32, 0.94) 42%,
+    rgba(12, 22, 48, 0.97) 100%
+  );
+  border-right-color: rgba(91, 141, 239, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@keyframes pulse-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-loader {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.pulse-loader-ring {
+  animation: pulse-loader 2.2s ease-in-out infinite;
+}
+
+/* Même empilement que lumis-web-app DashboardShell */
+.pulse-lumis-bg,
+.pulse-loader-screen {
+  background: var(--pulse-lumis-canvas);
+  background-attachment: fixed;
+}
+
+/* Scrollbar façon Lumis */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.02);
+}
+
+/* Panneaux type SettingsPopover Lumis */
+.lumis-glass-panel {
+  backdrop-filter: var(--lumis-glass-effect);
+  -webkit-backdrop-filter: var(--lumis-glass-effect);
+}
+
+/* Blocs cliquables (cartes dashboard, etc.) */
+.lumis-interactive-card {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.lumis-interactive-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lumis-card-hover);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply min-h-full text-foreground;
+    background-color: var(--background);
+  }
+  .dark body {
+    background: var(--pulse-lumis-canvas);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  html:not(.dark) body {
+    background-image: radial-gradient(ellipse 100% 60% at 0% 0%, rgba(0, 212, 180, 0.12), transparent 50%),
+      linear-gradient(180deg, #f8fafc, #f1f5f9);
+    background-attachment: fixed;
   }
 }

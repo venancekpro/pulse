@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  admin
+  viewer
+}
+
+enum LoadLevel {
+  critique
+  elevee
+  moderee
+  normale
+}
+
+enum Pole {
+  front
+  back
+  devops
+  ux_ui
+}
+
+enum ProjectStatus {
+  actif
+  livre
+  en_attente
+  urgent
+}
+
+enum ModuleStatus {
+  todo
+  in_progress
+  review
+  done
+}
+
+enum ModuleType {
+  default
+  custom
+}
+
+enum AssignmentRole {
+  lead
+  contributeur
+}
+
+enum ProjectComplexity {
+  faible
+  moyenne
+  haute
+  critique
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String
+  role         UserRole     @default(viewer)
+  memberId     String?      @unique
+  member       Member?      @relation(fields: [memberId], references: [id])
+  simulations  Simulation[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Member {
+  id                  String       @id @default(cuid())
+  name                String
+  pole                Pole
+  roles               String
+  loadLevel           LoadLevel    @default(normale)
+  transversalRoles    String       @default("[]")
+  isoActionsCompleted Int?
+  isoActionsTotal     Int?
+  availabilityMargin  String?
+  assignments         Assignment[]
+  modules             Module[]     @relation("AssignedModules")
+  user                User?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+}
+
+model Project {
+  id          String            @id @default(cuid())
+  name        String
+  code        String            @unique
+  description String?
+  status      ProjectStatus     @default(actif)
+  startDate   DateTime
+  deadline    DateTime
+  complexity  ProjectComplexity @default(moyenne)
+  modules     Module[]
+  assignments Assignment[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Module {
+  id            String       @id @default(cuid())
+  name          String
+  type          ModuleType   @default(default)
+  estimatedDays Int
+  completedDays Int          @default(0)
+  status        ModuleStatus @default(todo)
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedToId  String?
+  assignedTo    Member?      @relation("AssignedModules", fields: [assignedToId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Assignment {
+  id         String         @id @default(cuid())
+  memberId   String
+  member     Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  projectId  String
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  role       AssignmentRole @default(contributeur)
+  allocation Int
+  isUrgent   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([memberId, projectId])
+}
+
+model Simulation {
+  id          String   @id @default(cuid())
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  projectData String
+  assignments String
+  results     String
+  createdAt   DateTime @default(now())
+}
