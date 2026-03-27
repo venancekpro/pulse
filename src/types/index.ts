@@ -220,6 +220,19 @@ export type Permission =
   | "EXPORT_REPORTS"
   | "MANAGE_USERS";
 
+export type NotificationType = "assignment_added" | "assignment_removed" | "assignment_reassigned";
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  data: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: Date;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;

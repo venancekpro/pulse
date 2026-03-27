@@ -9,7 +9,7 @@ import {
   projectStatusFromDb,
 } from "@/lib/mappers";
 import { memberBasics } from "@/lib/utils/load-calculator";
-import type { Assignment, Member, MemberWithLoad, Module, Project } from "@/types";
+import type { Assignment, Member, MemberWithLoad, Module, Notification, NotificationType, Project } from "@/types";
 
 export function toMember(
   row: {
@@ -230,5 +230,33 @@ export function toProject(row: {
     assignments,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+  };
+}
+
+export function toNotification(row: {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  data: string;
+  isRead: boolean;
+  createdAt: Date;
+}): Notification {
+  let data: Record<string, unknown> = {};
+  try {
+    data = JSON.parse(row.data) as Record<string, unknown>;
+  } catch {
+    /* ignore */
+  }
+  return {
+    id: row.id,
+    userId: row.userId,
+    type: row.type as NotificationType,
+    title: row.title,
+    message: row.message,
+    data,
+    isRead: row.isRead,
+    createdAt: row.createdAt,
   };
 }

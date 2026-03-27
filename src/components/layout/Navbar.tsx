@@ -2,6 +2,7 @@
 
 import { Menu } from "lucide-react";
 import { LumisIconButton } from "@/components/motion/LumisIconButton";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -11,6 +12,7 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <Menu className="size-5" />
       </LumisIconButton>
       <div className="flex-1" />
+      <NotificationBell />
       <UserMenu />
     </header>
   );

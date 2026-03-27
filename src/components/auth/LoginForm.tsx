@@ -32,8 +32,7 @@ export function LoginForm() {
       }
       toast.success("Bienvenue sur PULSE");
       const from = searchParams.get("from") ?? "/";
-      router.push(from);
-      router.refresh();
+      window.location.href = from;
     } finally {
       setLoading(false);
     }

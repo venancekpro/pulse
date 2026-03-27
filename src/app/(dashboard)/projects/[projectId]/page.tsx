@@ -16,6 +16,7 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const id = params.projectId as string;
   const [project, setProject] = useState<Project | null>(null);
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     void (async () => {
@@ -24,7 +25,7 @@ export default function ProjectDetailPage() {
       const json = (await res.json()) as { data: Project };
       setProject(json.data);
     })();
-  }, [id]);
+  }, [id, version]);
 
   if (!project) {
     return <p className="text-muted-foreground">Chargement…</p>;
@@ -70,7 +71,10 @@ export default function ProjectDetailPage() {
           <CardTitle className="text-base">Équipe projet</CardTitle>
         </CardHeader>
         <CardContent>
-          <ProjectMembersList project={project} />
+          <ProjectMembersList
+            project={project}
+            onChanged={() => setVersion((v) => v + 1)}
+          />
         </CardContent>
       </Card>
 
