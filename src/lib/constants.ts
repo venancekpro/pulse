@@ -57,6 +57,13 @@ export const LOAD_COLORS: Record<LoadLevel, string> = {
   normale: "#10B981",
 };
 
+export const STATUS_COLORS: Record<string, string> = {
+  actif: "#10B981",
+  urgent: "#DC2626",
+  "en-attente": "#6B7280",
+  livre: "#3B82F6",
+};
+
 export const POLE_COLORS: Record<string, string> = {
   front: "#8B5CF6",
   back: "#06B6D4",

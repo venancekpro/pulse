@@ -1,56 +1,108 @@
 "use client";
 
-import { differenceInDays } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { STATUS_LABELS } from "@/lib/constants";
+import { useMemo } from "react";
+import type { Project } from "@/types";
+import type { ZoomLevel } from "./types";
+import {
+  computeTimelineRange,
+  computeColumns,
+  computeBarPosition,
+  computeTodayPosition,
+} from "./timeline-utils";
+import { TimelineGrid } from "./TimelineGrid";
+import { TimelineBar } from "./TimelineBar";
 
-type Row = {
-  id: string;
-  name: string;
-  code: string;
-  status: string;
-  startDate: Date;
-  deadline: Date;
-};
+const ROW_HEIGHT = 48;
 
-export function GanttChart({ projects }: { projects: Row[] }) {
-  if (projects.length === 0) return <p className="text-sm text-muted-foreground">Aucun projet</p>;
+interface GanttChartProps {
+  projects: Project[];
+  zoom: ZoomLevel;
+}
 
-  const starts = projects.map((p) => new Date(p.startDate).getTime());
-  const ends = projects.map((p) => new Date(p.deadline).getTime());
-  const min = Math.min(...starts);
-  const max = Math.max(...ends);
-  const span = Math.max(1, differenceInDays(new Date(max), new Date(min)));
+export function GanttChart({ projects, zoom }: GanttChartProps) {
+  const range = useMemo(
+    () => computeTimelineRange(projects, zoom),
+    [projects, zoom],
+  );
+  const columns = useMemo(
+    () => computeColumns(range, zoom),
+    [range, zoom],
+  );
+  const todayPercent = useMemo(
+    () => computeTodayPosition(range),
+    [range],
+  );
+  const bars = useMemo(
+    () =>
+      projects.map((p, i) => ({
+        project: p,
+        ...computeBarPosition(p, range),
+        rowIndex: i,
+      })),
+    [projects, range],
+  );
+
+  const gridOffsets = useMemo(() => {
+    const offsets: number[] = [];
+    let sum = 0;
+    for (const col of columns) {
+      sum += col.widthPercent;
+      offsets.push(sum);
+    }
+    return offsets;
+  }, [columns]);
+
+  const chartHeight = projects.length * ROW_HEIGHT;
+  const minWidth = Math.max(columns.length * 120, 600);
+
+  if (projects.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground py-8 text-center">
+        Aucun projet à afficher
+      </p>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Vue chronologique</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 overflow-x-auto">
-        {projects.map((p) => {
-          const s = new Date(p.startDate);
-          const e = new Date(p.deadline);
-          const left = (differenceInDays(s, new Date(min)) / span) * 100;
-          const width = (Math.max(1, differenceInDays(e, s)) / span) * 100;
-          return (
-            <div key={p.id} className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span className="font-medium text-foreground truncate pr-2">
-                  {p.name} · {STATUS_LABELS[p.status] ?? p.status}
-                </span>
-                <span className="shrink-0">{p.code}</span>
-              </div>
-              <div className="relative h-3 rounded-full bg-muted">
-                <div
-                  className="absolute top-0 h-3 rounded-full bg-[var(--pulse-primary)] opacity-90"
-                  style={{ left: `${left}%`, width: `${Math.max(width, 2)}%` }}
-                />
-              </div>
+    <div className="overflow-x-auto">
+      <div className="relative" style={{ minWidth }}>
+        <TimelineGrid
+          columns={columns}
+          todayPercent={todayPercent}
+          height={chartHeight}
+        />
+        <div className="relative" style={{ height: chartHeight }}>
+          {/* Vertical grid lines (behind bars) */}
+          {gridOffsets.slice(0, -1).map((offset, i) => (
+            <div
+              key={`grid-${i}`}
+              className="absolute top-0 bottom-0 border-l border-dashed border-border z-0"
+              style={{ left: `${offset}%` }}
+            />
+          ))}
+
+          {/* Today marker line in body */}
+          {todayPercent !== null && (
+            <div
+              className="absolute top-0 bottom-0 z-10"
+              style={{ left: `${todayPercent}%` }}
+            >
+              <div className="w-0.5 h-full bg-red-500 opacity-60" />
             </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+          )}
+
+          {/* Project bars */}
+          {bars.map(({ project, leftPercent, widthPercent, rowIndex }) => (
+            <TimelineBar
+              key={project.id}
+              project={project}
+              leftPercent={leftPercent}
+              widthPercent={widthPercent}
+              rowIndex={rowIndex}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
