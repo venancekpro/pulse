@@ -17,9 +17,10 @@ const ROW_HEIGHT = 48;
 interface GanttChartProps {
   projects: Project[];
   zoom: ZoomLevel;
+  highlightedPole?: string | null;
 }
 
-export function GanttChart({ projects, zoom }: GanttChartProps) {
+export function GanttChart({ projects, zoom, highlightedPole }: GanttChartProps) {
   const range = useMemo(
     () => computeTimelineRange(projects, zoom),
     [projects, zoom],
@@ -99,6 +100,7 @@ export function GanttChart({ projects, zoom }: GanttChartProps) {
               leftPercent={leftPercent}
               widthPercent={widthPercent}
               rowIndex={rowIndex}
+              highlightedPole={highlightedPole}
             />
           ))}
         </div>

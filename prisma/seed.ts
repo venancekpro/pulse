@@ -3,6 +3,7 @@ import {
   UserRole,
   Pole,
   LoadLevel,
+  LeaveType,
   ProjectStatus,
   ProjectComplexity,
   AssignmentRole,
@@ -19,6 +20,8 @@ async function clearPulseData() {
     prisma.simulation.deleteMany(),
     prisma.assignment.deleteMany(),
     prisma.module.deleteMany(),
+    prisma.leave.deleteMany(),
+    prisma.notification.deleteMany(),
     prisma.user.deleteMany(),
     prisma.project.deleteMany(),
     prisma.member.deleteMany(),
@@ -42,6 +45,7 @@ async function main() {
         name: "Yacine",
         pole: Pole.front,
         roles: JSON.stringify(["Resp. Front", "Resp. QSE"]),
+        skills: JSON.stringify([{name:"React",level:3},{name:"Next.js",level:3},{name:"TypeScript",level:3},{name:"Figma",level:1}]),
         loadLevel: LoadLevel.critique,
         transversalRoles: JSON.stringify(["Resp. QSE"]),
         isoActionsCompleted: 18,
@@ -54,6 +58,7 @@ async function main() {
         name: "Ariel",
         pole: Pole.front,
         roles: JSON.stringify(["Dev Front"]),
+        skills: JSON.stringify([{name:"React",level:2},{name:"Angular",level:2},{name:"TypeScript",level:2}]),
         loadLevel: LoadLevel.elevee,
         transversalRoles: JSON.stringify([]),
       },
@@ -64,6 +69,7 @@ async function main() {
         name: "Yoan",
         pole: Pole.front,
         roles: JSON.stringify(["Dev Front"]),
+        skills: JSON.stringify([{name:"React",level:2},{name:"Vue.js",level:1},{name:"TypeScript",level:2},{name:"Node.js",level:1}]),
         loadLevel: LoadLevel.elevee,
         transversalRoles: JSON.stringify(["Audit sécu", "Google Analytics"]),
       },
@@ -74,6 +80,7 @@ async function main() {
         name: "Venance",
         pole: Pole.front,
         roles: JSON.stringify(["Dev Front"]),
+        skills: JSON.stringify([{name:"React",level:2},{name:"Next.js",level:2},{name:"TypeScript",level:2},{name:"Docker",level:1},{name:"CI/CD",level:1}]),
         loadLevel: LoadLevel.moderee,
         transversalRoles: JSON.stringify(["Veille techno", "Amélioration IA"]),
         isoActionsCompleted: 5,
@@ -87,6 +94,7 @@ async function main() {
         name: "Chacoul",
         pole: Pole.back,
         roles: JSON.stringify(["Resp. Back", "Resp. Cloud"]),
+        skills: JSON.stringify([{name:"Node.js",level:3},{name:"Docker",level:3},{name:"AWS",level:2},{name:"PostgreSQL",level:3},{name:"Python",level:1}]),
         loadLevel: LoadLevel.critique,
         transversalRoles: JSON.stringify(["Resp. Cloud"]),
       },
@@ -97,6 +105,7 @@ async function main() {
         name: "Rico",
         pole: Pole.back,
         roles: JSON.stringify(["Resp. Back", "Resp. Maintenance"]),
+        skills: JSON.stringify([{name:"Node.js",level:3},{name:"Java",level:2},{name:"PostgreSQL",level:2},{name:"Docker",level:2}]),
         loadLevel: LoadLevel.critique,
         transversalRoles: JSON.stringify(["Resp. Maintenance"]),
       },
@@ -107,6 +116,7 @@ async function main() {
         name: "Fernandez",
         pole: Pole.back,
         roles: JSON.stringify(["Dev Back"]),
+        skills: JSON.stringify([{name:"Node.js",level:2},{name:"Python",level:2},{name:"MongoDB",level:1}]),
         loadLevel: LoadLevel.moderee,
         transversalRoles: JSON.stringify([]),
         availabilityMargin: "disponible",
@@ -118,6 +128,7 @@ async function main() {
         name: "Derick",
         pole: Pole.back,
         roles: JSON.stringify(["Dev Back"]),
+        skills: JSON.stringify([{name:"Node.js",level:1},{name:"TypeScript",level:1},{name:"SQLite",level:1}]),
         loadLevel: LoadLevel.normale,
         transversalRoles: JSON.stringify([]),
         availabilityMargin: "large",
@@ -129,6 +140,7 @@ async function main() {
         name: "Malan",
         pole: Pole.devops,
         roles: JSON.stringify(["DevOps"]),
+        skills: JSON.stringify([{name:"Docker",level:3},{name:"Kubernetes",level:2},{name:"CI/CD",level:3},{name:"AWS",level:3},{name:"GCP",level:1}]),
         loadLevel: LoadLevel.elevee,
         transversalRoles: JSON.stringify([
           "Serveurs — tous projets",
@@ -481,6 +493,45 @@ async function main() {
   }
 
   console.log(`Created ${assignments.length} assignments`);
+
+  // --- Leaves (sample absences) ---
+  console.log("Creating sample leaves...");
+  const now = new Date();
+  const leaves = [
+    {
+      memberId: "yacine",
+      startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5),
+      endDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 9),
+      type: LeaveType.conge,
+      description: "Vacances",
+    },
+    {
+      memberId: "ariel",
+      startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 12),
+      endDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 14),
+      type: LeaveType.formation,
+      description: "Formation React avancé",
+    },
+    {
+      memberId: "malan",
+      startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+      endDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2),
+      type: LeaveType.maladie,
+    },
+    {
+      memberId: "fernandez",
+      startDate: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+      endDate: new Date(now.getFullYear(), now.getMonth() + 1, 5),
+      type: LeaveType.conge,
+      description: "Congé annuel",
+    },
+  ];
+
+  for (const leave of leaves) {
+    await prisma.leave.create({ data: leave });
+  }
+  console.log(`Created ${leaves.length} leaves`);
+
   console.log("✅ Seeding completed!");
 }
 

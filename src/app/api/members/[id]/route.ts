@@ -34,6 +34,7 @@ export async function GET(
           },
         },
       },
+      leaves: { orderBy: { startDate: "asc" } },
     },
   });
 
@@ -65,20 +66,16 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: "Données invalides" }, { status: 400 });
   }
 
+  const data: Record<string, unknown> = {};
+  if (parsed.data.loadLevel) data.loadLevel = parsed.data.loadLevel;
+  if (parsed.data.availabilityMargin !== undefined) data.availabilityMargin = parsed.data.availabilityMargin;
+  if (parsed.data.isoActionsCompleted !== undefined) data.isoActionsCompleted = parsed.data.isoActionsCompleted;
+  if (parsed.data.isoActionsTotal !== undefined) data.isoActionsTotal = parsed.data.isoActionsTotal;
+  if (parsed.data.skills !== undefined) data.skills = JSON.stringify(parsed.data.skills);
+
   const row = await prisma.member.update({
     where: { id },
-    data: {
-      ...(parsed.data.loadLevel && { loadLevel: parsed.data.loadLevel }),
-      ...(parsed.data.availabilityMargin !== undefined && {
-        availabilityMargin: parsed.data.availabilityMargin,
-      }),
-      ...(parsed.data.isoActionsCompleted !== undefined && {
-        isoActionsCompleted: parsed.data.isoActionsCompleted,
-      }),
-      ...(parsed.data.isoActionsTotal !== undefined && {
-        isoActionsTotal: parsed.data.isoActionsTotal,
-      }),
-    },
+    data,
     include: {
       assignments: {
         include: {
@@ -93,6 +90,7 @@ export async function PATCH(
           },
         },
       },
+      leaves: { orderBy: { startDate: "asc" } },
     },
   });
 

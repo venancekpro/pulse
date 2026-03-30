@@ -16,6 +16,7 @@ export default function TimelinePage() {
     pole: "all",
     status: "all",
   });
+  const [highlightedPole, setHighlightedPole] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     if (!projects) return [];
@@ -54,9 +55,12 @@ export default function TimelinePage() {
           <CardTitle className="text-base">Vue chronologique</CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-hidden">
-          <GanttChart projects={filtered} zoom={zoom} />
+          <GanttChart projects={filtered} zoom={zoom} highlightedPole={highlightedPole} />
         </CardContent>
-        <TimelineLegend />
+        <TimelineLegend
+          onPoleHover={setHighlightedPole}
+          onPoleLeave={() => setHighlightedPole(null)}
+        />
       </Card>
     </div>
   );

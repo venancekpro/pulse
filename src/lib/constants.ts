@@ -58,7 +58,7 @@ export const LOAD_COLORS: Record<LoadLevel, string> = {
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  actif: "#10B981",
+  actif: "#FFFFFF",
   urgent: "#DC2626",
   "en-attente": "#6B7280",
   livre: "#3B82F6",
@@ -130,6 +130,18 @@ export const NAV_ITEMS = [
     permission: "VIEW_TIMELINE" as Permission,
   },
   {
+    label: "Compétences",
+    href: "/skills",
+    icon: "BookOpen" as const,
+    permission: "VIEW_TEAM" as Permission,
+  },
+  {
+    label: "Dépendances",
+    href: "/dependencies",
+    icon: "Network" as const,
+    permission: "VIEW_TEAM" as Permission,
+  },
+  {
     label: "Rapports",
     href: "/reports",
     icon: "BarChart3" as const,
@@ -143,6 +155,41 @@ export const SETTINGS_NAV = {
   icon: "Settings" as const,
   permission: "MANAGE_USERS" as Permission,
   adminOnly: true,
+};
+
+export const LEAVE_TYPE_LABELS: Record<string, string> = {
+  conge: "Congé",
+  maladie: "Maladie",
+  formation: "Formation",
+  autre: "Autre",
+};
+
+export const LEAVE_TYPE_COLORS: Record<string, string> = {
+  conge: "#3B82F6",
+  maladie: "#EF4444",
+  formation: "#8B5CF6",
+  autre: "#6B7280",
+};
+
+export const PREDEFINED_SKILLS: string[] = [
+  "React", "Next.js", "TypeScript", "Angular", "Vue.js",
+  "Node.js", "Python", "Java", "Spring Boot", ".NET",
+  "Docker", "Kubernetes", "CI/CD", "AWS", "Azure", "GCP",
+  "Figma", "Adobe XD", "UX Research", "Design System",
+  "PostgreSQL", "MongoDB", "SQLite", "Redis",
+  "Flutter", "React Native", "Swift", "Kotlin",
+];
+
+export const SKILL_LEVEL_LABELS: Record<number, string> = {
+  1: "Débutant",
+  2: "Intermédiaire",
+  3: "Expert",
+};
+
+export const SKILL_LEVEL_COLORS: Record<number, string> = {
+  1: "#6B7280",
+  2: "#3B82F6",
+  3: "#10B981",
 };
 
 export const DEFAULT_PASSWORD = "Pulse2024!";

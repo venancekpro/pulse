@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, AlertTriangle, FolderKanban, Users } from "lucide-react";
+import { Activity, AlertTriangle, FolderKanban, Network, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DashboardStats } from "@/types";
@@ -102,6 +102,22 @@ export function QuickStats({ stats }: { stats: DashboardStats }) {
         "hover:border-[color-mix(in_srgb,var(--kpi-activity)_28%,var(--lumis-border)))] hover:shadow-[0_8px_32px_var(--kpi-activity-glow)]",
     },
   ];
+
+  if (stats.spofCount > 0) {
+    rows.push({
+      key: "spof",
+      title: "SPOF détectés",
+      value: String(stats.spofCount),
+      sub: `${stats.criticalSpofCount} critique${stats.criticalSpofCount > 1 ? "s" : ""} — membres isolés sur plusieurs projets`,
+      Icon: Network,
+      border: stats.criticalSpofCount > 0 ? "border-l-[var(--kpi-overload-alert)]" : "border-l-[var(--kpi-overload-warn)]",
+      iconBg: stats.criticalSpofCount > 0 ? "bg-[color-mix(in_srgb,var(--kpi-overload-alert)_18%,transparent)]" : "bg-[color-mix(in_srgb,var(--kpi-overload-warn)_18%,transparent)]",
+      iconFg: stats.criticalSpofCount > 0 ? "text-[var(--kpi-overload-alert)]" : "text-[var(--kpi-overload-warn)]",
+      titleTone: "text-[var(--lumis-text-dim)]",
+      valueClass: stats.criticalSpofCount > 0 ? "text-[var(--kpi-overload-alert)]" : "text-[var(--kpi-overload-warn)]",
+      hover: "hover:border-[color-mix(in_srgb,var(--kpi-overload-warn)_32%,transparent)] hover:shadow-[0_8px_32px_rgba(245,158,11,0.15)]",
+    });
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

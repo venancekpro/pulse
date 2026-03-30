@@ -3,7 +3,7 @@
 import type { Project } from "@/types";
 import { STATUS_COLORS, STATUS_LABELS, POLE_COLORS, POLE_LABELS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils/date-helpers";
-import { getLeadPole } from "./timeline-utils";
+import { getProjectPoles } from "./timeline-utils";
 import {
   Popover,
   PopoverTrigger,
@@ -22,6 +22,7 @@ interface TimelineBarProps {
   leftPercent: number;
   widthPercent: number;
   rowIndex: number;
+  highlightedPole?: string | null;
 }
 
 function getStatusBadgeVariant(status: string) {
@@ -40,31 +41,88 @@ export function TimelineBar({
   leftPercent,
   widthPercent,
   rowIndex,
+  highlightedPole,
 }: TimelineBarProps) {
-  const leadPole = getLeadPole(project);
+  const poles = getProjectPoles(project);
   const statusColor = STATUS_COLORS[project.status] ?? "#6B7280";
-  const poleColor = leadPole ? POLE_COLORS[leadPole] : undefined;
 
   const doneCount = project.modules?.filter((m) => m.status === "done").length ?? 0;
   const totalCount = project.modules?.length ?? 0;
   const progressPercent = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
 
+  const isDimmed = highlightedPole ? !poles.includes(highlightedPole) : false;
+
+  // Texte sombre sur fond clair, blanc sur fond foncé
+  const isLightBg = (() => {
+    const hex = statusColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+  })();
+  const textColor = isLightBg ? "#1e293b" : "#ffffff";
+
   return (
     <Popover>
       <PopoverTrigger
-        className="absolute z-20 cursor-pointer rounded-md text-xs text-white font-medium truncate flex items-center gap-1.5 px-2 shadow-sm transition-all hover:brightness-110 hover:shadow-md"
+        className="absolute z-20 cursor-pointer rounded-md text-xs font-medium flex items-center gap-1 shadow-sm hover:brightness-110 hover:shadow-md"
         style={{
           top: rowIndex * ROW_HEIGHT + 8,
           left: `${leftPercent}%`,
           width: `${widthPercent}%`,
           height: 32,
           backgroundColor: statusColor,
-          opacity: 0.9,
-          borderLeft: `4px solid ${poleColor ?? "var(--pulse-primary)"}`,
+          color: textColor,
+          opacity: isDimmed ? 0.2 : 0.9,
+          transition: "opacity 0.2s ease",
+          paddingLeft: poles.length > 0 ? 20 : 8,
+          paddingRight: 6,
+          overflow: "hidden",
+          border: isLightBg ? "1px solid #e2e8f0" : "none",
         }}
       >
+        {/* DNA Stripe — bande segmentée multi-pôle */}
+        {poles.length > 0 && (
+          <div
+            className="absolute left-0 top-0 bottom-0 rounded-l-md overflow-hidden"
+            style={{ width: 6 }}
+          >
+            {poles.map((pole, i) => (
+              <div
+                key={pole}
+                style={{
+                  position: "absolute",
+                  top: `${(i / poles.length) * 100}%`,
+                  height: `${100 / poles.length}%`,
+                  width: "100%",
+                  backgroundColor: POLE_COLORS[pole] ?? "#6B7280",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         <span className="truncate">{project.name}</span>
-        <span className="text-white/70 shrink-0">{project.code}</span>
+        <span className="shrink-0 text-[10px]" style={{ color: isLightBg ? "#64748b" : "rgba(255,255,255,0.7)" }}>{project.code}</span>
+
+        {/* Pole Chips — pastilles colorées par pôle */}
+        {poles.length > 0 && (
+          <div className="flex items-center gap-0.5 shrink-0 ml-auto">
+            {poles.map((pole) => (
+              <span
+                key={pole}
+                className="rounded-full shrink-0"
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: POLE_COLORS[pole] ?? "#6B7280",
+                  border: "1px solid rgba(255,255,255,0.5)",
+                }}
+                title={POLE_LABELS[pole] ?? pole}
+              />
+            ))}
+          </div>
+        )}
       </PopoverTrigger>
 
       <PopoverContent side="bottom" sideOffset={8} className="w-80">

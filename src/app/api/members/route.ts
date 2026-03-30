@@ -24,6 +24,7 @@ export async function GET() {
           },
         },
       },
+      leaves: { orderBy: { startDate: "asc" } },
     },
     orderBy: [{ pole: "asc" }, { name: "asc" }],
   });

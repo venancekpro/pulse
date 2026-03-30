@@ -1,0 +1,26 @@
+{
+  "project": "PULSE",
+  "last_updated": "2026-03-30T12:00:00Z",
+  "sessions": [
+    {
+      "session_id": "2026-03-30T12-00-00",
+      "date": "2026-03-30",
+      "file": "sessions/2026-03-30T12-00-00.md",
+      "ideas_count": 11,
+      "summary": "Amélioration visibilité pôles et multi-pôle sur la timeline"
+    }
+  ],
+  "ideas_index": [
+    { "name": "DNA Stripe", "category": "accelerateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Contraste Adaptatif", "category": "accelerateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Légende Highlight", "category": "accelerateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Pole Chips", "category": "accelerateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Swimlanes par Pôle", "category": "differenciateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Heatmap de Charge", "category": "differenciateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Vue Matrice Pôle × Projet", "category": "differenciateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Filtre Intersection Pôle", "category": "differenciateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Segmented Bar", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Pole Trend", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Snapshot Comparateur", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" }
+  ]
+}

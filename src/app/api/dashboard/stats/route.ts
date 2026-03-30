@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { memberBasics } from "@/lib/utils/load-calculator";
+import { calculateEffectiveLoad, memberBasics } from "@/lib/utils/load-calculator";
+import { detectSPOFs } from "@/lib/utils/spof-detector";
 import { poleFromDb } from "@/lib/mappers";
 import type { DashboardStats, Pole, PoleStats } from "@/types";
 
@@ -17,13 +18,20 @@ export async function GET() {
         assignments: {
           include: { project: true },
         },
+        leaves: true,
       },
     }),
-    prisma.project.findMany(),
+    prisma.project.findMany({
+      include: {
+        assignments: {
+          select: { memberId: true, projectId: true, role: true, allocation: true },
+        },
+      },
+    }),
   ]);
 
   const activeProjects = projects.filter((p) => p.status !== "livre").length;
-  const overload: { pole: Pole; load: number; level: string }[] = [];
+  const overload: { pole: Pole; load: number; effectiveLoad: number; level: string }[] = [];
 
   for (const m of members) {
     const b = memberBasics({
@@ -40,9 +48,11 @@ export async function GET() {
         project: { status: a.project.status },
       })),
     });
+    const { effectiveLoad } = calculateEffectiveLoad(b.calculatedLoad, m.leaves);
     overload.push({
       pole: b.pole,
       load: b.calculatedLoad,
+      effectiveLoad,
       level: b.loadLevel,
     });
   }
@@ -67,6 +77,20 @@ export async function GET() {
     };
   });
 
+  // SPOF detection
+  const mappedMembers = members.map((m) => {
+    const b = memberBasics(m);
+    return { id: m.id, name: m.name, pole: poleFromDb(m.pole), calculatedLoad: b.calculatedLoad, loadLevel: b.loadLevel };
+  });
+  const mappedProjects = projects.map((p) => ({
+    id: p.id, name: p.name, code: p.code, status: p.status,
+    assignments: p.assignments.map((a) => ({
+      memberId: a.memberId, projectId: a.projectId,
+      role: a.role as "lead" | "contributeur", allocation: a.allocation,
+    })),
+  }));
+  const spofResult = detectSPOFs(mappedMembers, mappedProjects);
+
   const stats: DashboardStats = {
     totalMembers: members.length,
     totalProjects: projects.length,
@@ -74,6 +98,8 @@ export async function GET() {
     membersInOverload,
     overloadPercentage,
     poleStats,
+    spofCount: spofResult.totalSPOFs,
+    criticalSpofCount: spofResult.criticalSPOFs,
   };
 
   return NextResponse.json({ success: true, data: stats });

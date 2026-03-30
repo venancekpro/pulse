@@ -82,6 +82,7 @@ function rowToUser(row: {
         name: row.member.name,
         pole: poleFromDb(row.member.pole as Parameters<typeof poleFromDb>[0]),
         roles: safeJsonArray(row.member.roles),
+        skills: [],
         loadLevel: loadLevelFromDb(row.member.loadLevel),
         transversalRoles: safeJsonArray(row.member.transversalRoles),
         isoActions:

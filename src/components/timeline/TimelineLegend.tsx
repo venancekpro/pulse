@@ -7,7 +7,12 @@ import {
   POLE_LABELS,
 } from "@/lib/constants";
 
-export function TimelineLegend() {
+interface TimelineLegendProps {
+  onPoleHover?: (pole: string) => void;
+  onPoleLeave?: () => void;
+}
+
+export function TimelineLegend({ onPoleHover, onPoleLeave }: TimelineLegendProps) {
   return (
     <div className="flex flex-wrap gap-6 px-4 py-3 border-t border-border">
       <div className="flex items-center gap-3">
@@ -34,9 +39,14 @@ export function TimelineLegend() {
           Pôle (bordure)
         </span>
         {Object.entries(POLE_COLORS).map(([key, color]) => (
-          <div key={key} className="flex items-center gap-1.5">
+          <div
+            key={key}
+            className="flex items-center gap-1.5 cursor-pointer rounded px-1 py-0.5 transition-colors hover:bg-muted"
+            onMouseEnter={() => onPoleHover?.(key)}
+            onMouseLeave={() => onPoleLeave?.()}
+          >
             <span
-              className="h-3 w-1 rounded-sm"
+              className="h-3 w-1.5 rounded-sm"
               style={{ backgroundColor: color }}
             />
             <span className="text-xs text-muted-foreground">

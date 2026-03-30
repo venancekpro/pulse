@@ -8,8 +8,31 @@ import {
   poleFromDb,
   projectStatusFromDb,
 } from "@/lib/mappers";
-import { memberBasics } from "@/lib/utils/load-calculator";
-import type { Assignment, Member, MemberWithLoad, Module, Notification, NotificationType, Project } from "@/types";
+import { leaveTypeFromDb } from "@/lib/mappers";
+import { calculateEffectiveLoad, memberBasics } from "@/lib/utils/load-calculator";
+import type { Assignment, Leave, Member, MemberSkill, MemberWithLoad, Module, Notification, NotificationType, Project } from "@/types";
+
+export function toLeave(row: {
+  id: string;
+  memberId: string;
+  startDate: Date;
+  endDate: Date;
+  type: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): Leave {
+  return {
+    id: row.id,
+    memberId: row.memberId,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    type: leaveTypeFromDb(row.type),
+    description: row.description ?? undefined,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
 export function toMember(
   row: {
@@ -17,6 +40,7 @@ export function toMember(
     name: string;
     pole: string;
     roles: string;
+    skills?: string;
     loadLevel: string;
     transversalRoles: string;
     isoActionsCompleted: number | null;
@@ -41,11 +65,22 @@ export function toMember(
         deadline: Date;
       };
     }>;
+    leaves?: Array<{
+      id: string;
+      memberId: string;
+      startDate: Date;
+      endDate: Date;
+      type: string;
+      description: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
   },
   withLoad = false,
 ): Member | MemberWithLoad {
   let roles: string[];
   let transversalRoles: string[];
+  let skills: MemberSkill[];
   try {
     roles = JSON.parse(row.roles) as string[];
   } catch {
@@ -55,6 +90,11 @@ export function toMember(
     transversalRoles = JSON.parse(row.transversalRoles) as string[];
   } catch {
     transversalRoles = [];
+  }
+  try {
+    skills = JSON.parse(row.skills ?? "[]") as MemberSkill[];
+  } catch {
+    skills = [];
   }
 
   const assignments: Assignment[] = row.assignments.map((a) => ({
@@ -81,11 +121,14 @@ export function toMember(
     updatedAt: a.updatedAt,
   }));
 
+  const leaves: Leave[] = (row.leaves ?? []).map(toLeave);
+
   const base: Member = {
     id: row.id,
     name: row.name,
     pole: poleFromDb(row.pole as Parameters<typeof poleFromDb>[0]),
     roles,
+    skills,
     loadLevel: loadLevelFromDb(row.loadLevel),
     transversalRoles,
     isoActions:
@@ -94,6 +137,7 @@ export function toMember(
         : undefined,
     availabilityMargin: availabilityFromDb(row.availabilityMargin),
     assignments,
+    leaves,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -115,11 +159,19 @@ export function toMember(
     })),
   });
 
+  const { effectiveLoad, isOnLeave, currentLeave } = calculateEffectiveLoad(
+    basics.calculatedLoad,
+    leaves,
+  );
+
   return {
     ...base,
     calculatedLoad: basics.calculatedLoad,
+    effectiveLoad,
     projectCount: basics.projectCount,
     urgentProjectCount: basics.urgentProjectCount,
+    isOnLeave,
+    currentLeave: currentLeave ? toLeave(currentLeave as Parameters<typeof toLeave>[0]) : undefined,
   };
 }
 

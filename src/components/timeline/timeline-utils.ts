@@ -142,3 +142,11 @@ export function getLeadPole(
   const lead = project.assignments?.find((a) => a.role === "lead");
   return lead?.member?.pole ?? null;
 }
+
+export function getProjectPoles(project: Project): string[] {
+  const poles = new Set<string>();
+  for (const a of project.assignments ?? []) {
+    if (a.member?.pole) poles.add(a.member.pole);
+  }
+  return Array.from(poles);
+}

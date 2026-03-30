@@ -2,6 +2,7 @@ import type { Pole as PrismaPole } from "@/generated/prisma/client";
 import type {
   AssignmentRole,
   AvailabilityMargin,
+  LeaveType,
   LoadLevel,
   ModuleStatus,
   ModuleType,
@@ -57,4 +58,8 @@ export function complexityFromDb(c: string): ProjectComplexity {
 export function availabilityFromDb(s: string | null | undefined): AvailabilityMargin | undefined {
   if (!s) return undefined;
   return s as AvailabilityMargin;
+}
+
+export function leaveTypeFromDb(t: string): LeaveType {
+  return t as LeaveType;
 }

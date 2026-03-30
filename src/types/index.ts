@@ -7,6 +7,24 @@ export type ModuleType = "default" | "custom";
 export type AssignmentRole = "lead" | "contributeur";
 export type ProjectComplexity = "faible" | "moyenne" | "haute" | "critique";
 export type AvailabilityMargin = "large" | "disponible" | "aucune";
+export type LeaveType = "conge" | "maladie" | "formation" | "autre";
+export type SkillLevel = 1 | 2 | 3;
+
+export interface Leave {
+  id: string;
+  memberId: string;
+  startDate: Date;
+  endDate: Date;
+  type: LeaveType;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MemberSkill {
+  name: string;
+  level: SkillLevel;
+}
 
 export interface User {
   id: string;
@@ -35,11 +53,13 @@ export interface Member {
   name: string;
   pole: Pole;
   roles: string[];
+  skills: MemberSkill[];
   loadLevel: LoadLevel;
   transversalRoles: string[];
   isoActions?: { completed: number; total: number };
   availabilityMargin?: AvailabilityMargin;
   assignments: Assignment[];
+  leaves?: Leave[];
   user?: User;
   createdAt: Date;
   updatedAt: Date;
@@ -47,8 +67,11 @@ export interface Member {
 
 export interface MemberWithLoad extends Member {
   calculatedLoad: number;
+  effectiveLoad: number;
   projectCount: number;
   urgentProjectCount: number;
+  isOnLeave: boolean;
+  currentLeave?: Leave;
 }
 
 export interface Project {
@@ -195,6 +218,8 @@ export interface DashboardStats {
   membersInOverload: number;
   overloadPercentage: number;
   poleStats: PoleStats[];
+  spofCount: number;
+  criticalSpofCount: number;
 }
 
 export interface PoleStats {
@@ -231,6 +256,107 @@ export interface Notification {
   data: Record<string, unknown>;
   isRead: boolean;
   createdAt: Date;
+}
+
+// --- Reliability Score (LOT 2) ---
+export type ReliabilityBias = "optimiste" | "realiste" | "pessimiste";
+export type ReliabilityConfidence = "haute" | "moyenne" | "faible";
+
+export interface ReliabilityScore {
+  memberId?: string;
+  memberName?: string;
+  pole?: Pole;
+  totalModules: number;
+  completedModules: number;
+  totalEstimatedDays: number;
+  totalActualDays: number;
+  ratio: number;
+  bias: ReliabilityBias;
+  correctionFactor: number;
+  confidence: ReliabilityConfidence;
+}
+
+export interface CorrectedEstimate {
+  rawDays: number;
+  correctedDays: number;
+  correctionFactor: number;
+  confidence: ReliabilityConfidence;
+}
+
+// --- Skills Matrix (LOT 3) ---
+export interface SkillMatrixEntry {
+  memberId: string;
+  memberName: string;
+  pole: Pole;
+  skills: MemberSkill[];
+}
+
+export interface CrossPoleSuggestion {
+  memberId: string;
+  memberName: string;
+  pole: Pole;
+  matchingSkills: string[];
+  currentLoad: number;
+  suggestedAllocation: number;
+  reason: string;
+}
+
+// --- Quick Swap (LOT 4) ---
+export interface QuickSwapCandidate {
+  memberId: string;
+  memberName: string;
+  pole: Pole;
+  currentLoad: number;
+  effectiveLoad: number;
+  projectedLoad: number;
+  loadLevel: LoadLevel;
+  projectedLevel: LoadLevel;
+  skillMatch: number;
+  availabilityNote?: string;
+}
+
+export interface QuickSwapResult {
+  success: boolean;
+  oldMemberLoad: number;
+  newMemberLoad: number;
+  oldMemberName: string;
+  newMemberName: string;
+  projectName: string;
+}
+
+// --- SPOF / Dependency Radar (LOT 5) ---
+export interface SPOFAlert {
+  memberId: string;
+  memberName: string;
+  pole: Pole;
+  currentLoad: number;
+  soloProjects: Array<{
+    projectId: string;
+    projectName: string;
+    projectCode: string;
+    role: AssignmentRole;
+    allocation: number;
+  }>;
+  riskLevel: "medium" | "high" | "critical";
+  impactMessage: string;
+  blockedProjectCount: number;
+}
+
+export interface DependencyEdge {
+  source: string;
+  sourceName: string;
+  target: string;
+  targetName: string;
+  role: AssignmentRole;
+  allocation: number;
+  isSoleMember: boolean;
+}
+
+export interface DependencyRadarResult {
+  spofAlerts: SPOFAlert[];
+  edges: DependencyEdge[];
+  totalSPOFs: number;
+  criticalSPOFs: number;
 }
 
 export interface ApiResponse<T> {

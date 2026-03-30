@@ -2,9 +2,11 @@
 
 import {
   BarChart3,
+  BookOpen,
   CalendarDays,
   FolderKanban,
   LayoutDashboard,
+  Network,
   Settings,
   Users,
   Zap,
@@ -24,6 +26,8 @@ const iconMap: Record<string, LucideIcon> = {
   FolderKanban,
   Zap,
   CalendarDays,
+  BookOpen,
+  Network,
   BarChart3,
   Settings,
 };
