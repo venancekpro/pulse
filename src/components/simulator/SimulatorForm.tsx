@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,87 +14,112 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSimulation } from "@/hooks/useSimulation";
+import { useSimulationStore } from "@/stores/simulation-store";
+import { useScenarioActions } from "@/hooks/useScenarioActions";
 import { BeforeAfterComparison } from "@/components/simulator/BeforeAfterComparison";
 import { ConflictWarnings } from "@/components/simulator/ConflictWarnings";
 import { ImpactPreview } from "@/components/simulator/ImpactPreview";
 import { MemberImpactCard } from "@/components/simulator/MemberImpactCard";
 import { RecommendationPanel } from "@/components/simulator/RecommendationPanel";
-import type { MemberWithLoad, SimulationAssignment } from "@/types";
+import { MemberAllocationRow } from "@/components/simulator/MemberAllocationRow";
+import { ModuleEditor } from "@/components/simulator/ModuleEditor";
+import type { MemberWithLoad, AssignmentRole, ProjectComplexity, SimulatorModule } from "@/types";
 
 export function SimulatorForm({ members }: { members: MemberWithLoad[] }) {
-  const { run, loading, lastResult } = useSimulation();
-  const [name, setName] = useState("Nouveau module");
-  const [code, setCode] = useState("NEW");
-  const [deadline, setDeadline] = useState("");
-  const [complexity, setComplexity] = useState<"faible" | "moyenne" | "haute" | "critique">("moyenne");
-  const [allocations, setAllocations] = useState<Record<string, string>>({});
+  const router = useRouter();
+  const activeId = useSimulationStore((s) => s.activeScenarioId);
+  const scenario = useSimulationStore((s) =>
+    s.scenarios.find((sc) => sc.id === s.activeScenarioId),
+  );
+  const updateForm = useSimulationStore((s) => s.updateScenarioForm);
+  const setPhantomProject = useSimulationStore((s) => s.setPhantomProject);
+  const { runScenario, saveScenario, loading } = useScenarioActions();
 
-  const assignmentPayload: SimulationAssignment[] = useMemo(() => {
-    return Object.entries(allocations)
-      .filter(([, v]) => v && Number(v) > 0)
-      .map(([memberId, v]) => {
-        const m = members.find((x) => x.id === memberId);
-        return {
-          memberId,
-          memberName: m?.name ?? memberId,
-          allocation: Number(v),
-          role: "contributeur" as const,
-        };
-      });
-  }, [allocations, members]);
+  const formData = scenario?.formData;
+  const result = scenario?.result ?? null;
+
+  const update = useCallback(
+    (patch: Record<string, unknown>) => {
+      if (activeId) updateForm(activeId, patch as Record<string, never>);
+    },
+    [activeId, updateForm],
+  );
+
+  const assignedCount = useMemo(() => {
+    if (!formData) return 0;
+    return Object.values(formData.allocations).filter((v) => v > 0).length;
+  }, [formData]);
 
   async function submit() {
-    if (!deadline) {
+    if (!formData || !activeId) return;
+    if (!formData.deadline) {
       toast.error("Indiquez une échéance");
       return;
     }
-    if (assignmentPayload.length === 0) {
+    if (assignedCount === 0) {
       toast.error("Attribuez au moins un membre avec un %");
       return;
     }
+    const validModules = formData.modules.filter(
+      (m) => m.name.trim() && m.estimatedDays > 0,
+    );
+    if (validModules.length === 0) {
+      toast.error("Ajoutez au moins un module avec un nom et une durée");
+      return;
+    }
     try {
-      await run(
-        {
-          name,
-          code,
-          deadline,
-          complexity,
-          modules: [{ name: "MVP", estimatedDays: 10 }],
-        },
-        assignmentPayload.map((a) => ({
-          ...a,
-          role: "contributeur",
-        })),
-      );
+      await runScenario(activeId, members.map((m) => ({ id: m.id, name: m.name })));
       toast.success("Simulation calculée");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur");
     }
   }
 
+  async function handleSave() {
+    if (!activeId || !result) return;
+    try {
+      await saveScenario(activeId);
+      toast.success("Scénario sauvegardé");
+    } catch {
+      toast.error("Erreur de sauvegarde");
+    }
+  }
+
+  if (!formData || !activeId) {
+    return <p className="text-muted-foreground">Aucun scénario actif</p>;
+  }
+
   return (
     <div className="space-y-8">
+      {/* Infos projet */}
       <div className="grid gap-4 md:grid-cols-2 max-w-3xl">
         <div className="space-y-2">
           <Label>Nom projet fictif</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            value={formData.name}
+            onChange={(e) => update({ name: e.target.value })}
+          />
         </div>
         <div className="space-y-2">
           <Label>Code</Label>
-          <Input value={code} onChange={(e) => setCode(e.target.value)} />
+          <Input
+            value={formData.code}
+            onChange={(e) => update({ code: e.target.value })}
+          />
         </div>
         <div className="space-y-2">
           <Label>Échéance</Label>
-          <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          <Input
+            type="date"
+            value={formData.deadline}
+            onChange={(e) => update({ deadline: e.target.value })}
+          />
         </div>
         <div className="space-y-2">
           <Label>Complexité</Label>
           <Select
-            value={complexity}
-            onValueChange={(v) =>
-              v && setComplexity(v as "faible" | "moyenne" | "haute" | "critique")
-            }
+            value={formData.complexity}
+            onValueChange={(v) => v && update({ complexity: v as ProjectComplexity })}
           >
             <SelectTrigger>
               <SelectValue />
@@ -107,46 +134,108 @@ export function SimulatorForm({ members }: { members: MemberWithLoad[] }) {
         </div>
       </div>
 
+      {/* Modules du projet */}
+      <ModuleEditor
+        modules={formData.modules}
+        onChange={(modules: SimulatorModule[]) => update({ modules })}
+      />
+
+      {/* Affectations avec sliders + preview live */}
       <div>
-        <h3 className="text-sm font-semibold mb-3">Affectations proposées (%)</h3>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <h3 className="text-sm font-semibold mb-3">Affectations proposées</h3>
+        <div className="rounded-lg border border-border p-3">
+          <div className="flex items-center gap-3 pb-2 mb-2 border-b border-border text-xs text-muted-foreground font-medium">
+            <span className="w-28 shrink-0">Membre</span>
+            <span className="w-[110px] shrink-0">Rôle</span>
+            <span className="flex-1 min-w-[100px] text-center">Allocation</span>
+            <span className="w-16 text-center">%</span>
+            <span className="w-52 shrink-0 text-right">Charge projetée</span>
+          </div>
           {members.map((m) => (
-            <div key={m.id} className="flex items-center gap-2">
-              <Label className="w-28 truncate text-xs">{m.name}</Label>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                className="h-8"
-                value={allocations[m.id] ?? ""}
-                onChange={(e) =>
-                  setAllocations((prev) => ({ ...prev, [m.id]: e.target.value }))
-                }
-                placeholder="0"
-              />
-            </div>
+            <MemberAllocationRow
+              key={m.id}
+              member={m}
+              allocation={formData.allocations[m.id] ?? 0}
+              role={(formData.roles[m.id] as AssignmentRole) ?? "contributeur"}
+              onAllocationChange={(v) =>
+                update({ allocations: { ...formData.allocations, [m.id]: v } })
+              }
+              onRoleChange={(r) =>
+                update({ roles: { ...formData.roles, [m.id]: r } })
+              }
+            />
           ))}
         </div>
       </div>
 
-      <Button onClick={() => void submit()} loading={loading}>
-        {loading ? "Calcul…" : "Lancer la simulation"}
-      </Button>
+      <div className="flex gap-3">
+        <Button onClick={() => void submit()} loading={loading}>
+          {loading ? "Calcul…" : "Lancer la simulation"}
+        </Button>
+        {result && (
+          <>
+            <Button variant="outline" onClick={() => void handleSave()}>
+              Sauvegarder
+            </Button>
+            {formData.deadline && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const validModules = formData.modules.filter(
+                    (m) => m.name.trim() && m.estimatedDays > 0,
+                  );
+                  const assignments = Object.entries(formData.allocations)
+                    .filter(([, v]) => v > 0)
+                    .map(([memberId, allocation]) => {
+                      const member = members.find((x) => x.id === memberId);
+                      return {
+                        memberId,
+                        memberName: member?.name ?? memberId,
+                        allocation,
+                        role: (formData.roles[memberId] ?? "contributeur") as "lead" | "contributeur",
+                      };
+                    });
+                  setPhantomProject({
+                    scenarioId: activeId!,
+                    scenarioLabel: scenario!.label,
+                    projectData: {
+                      name: formData.name,
+                      code: formData.code,
+                      deadline: formData.deadline,
+                      complexity: formData.complexity,
+                      modules: validModules.map((m) => ({
+                        name: m.name,
+                        estimatedDays: m.estimatedDays,
+                      })),
+                    },
+                    assignments,
+                    startDate: new Date().toISOString().slice(0, 10),
+                  });
+                  router.push("/timeline");
+                }}
+              >
+                <CalendarDays className="size-4 mr-1.5" />
+                Voir sur la timeline
+              </Button>
+            )}
+          </>
+        )}
+      </div>
 
-      {lastResult && (
+      {result && (
         <div className="space-y-6 border-t pt-6">
-          <ImpactPreview summary={lastResult.summary} />
-          <BeforeAfterComparison before={lastResult.beforeState} after={lastResult.afterState} />
+          <ImpactPreview summary={result.summary} />
+          <BeforeAfterComparison before={result.beforeState} after={result.afterState} />
           <div>
             <h3 className="text-sm font-semibold mb-2">Impacts individuels</h3>
             <div className="grid sm:grid-cols-2 gap-3">
-              {lastResult.impacts.map((imp) => (
+              {result.impacts.map((imp) => (
                 <MemberImpactCard key={imp.memberId} impact={imp} />
               ))}
             </div>
           </div>
-          <RecommendationPanel items={lastResult.recommendations} />
-          <ConflictWarnings warnings={lastResult.warnings} />
+          <RecommendationPanel items={result.recommendations} />
+          <ConflictWarnings warnings={result.warnings} />
         </div>
       )}
     </div>

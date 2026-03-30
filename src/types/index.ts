@@ -10,6 +10,39 @@ export type AvailabilityMargin = "large" | "disponible" | "aucune";
 export type LeaveType = "conge" | "maladie" | "formation" | "autre";
 export type SkillLevel = 1 | 2 | 3;
 
+// --- Simulator enhancements ---
+export interface SimulatorModule {
+  id: string;
+  name: string;
+  estimatedDays: number;
+}
+
+export interface ScenarioFormData {
+  name: string;
+  code: string;
+  deadline: string;
+  complexity: ProjectComplexity;
+  modules: SimulatorModule[];
+  allocations: Record<string, number>;
+  roles: Record<string, AssignmentRole>;
+}
+
+export interface NamedScenario {
+  id: string;
+  label: string;
+  formData: ScenarioFormData;
+  result: SimulationResult | null;
+  createdAt: string;
+}
+
+export interface PhantomProject {
+  scenarioId: string;
+  scenarioLabel: string;
+  projectData: SimulationProjectData;
+  assignments: SimulationAssignment[];
+  startDate: string;
+}
+
 export interface Leave {
   id: string;
   memberId: string;

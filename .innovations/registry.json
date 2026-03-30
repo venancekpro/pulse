@@ -1,6 +1,6 @@
 {
   "project": "PULSE",
-  "last_updated": "2026-03-30T12:00:00Z",
+  "last_updated": "2026-03-30T14:30:00Z",
   "sessions": [
     {
       "session_id": "2026-03-30T12-00-00",
@@ -8,6 +8,13 @@
       "file": "sessions/2026-03-30T12-00-00.md",
       "ideas_count": 11,
       "summary": "Amélioration visibilité pôles et multi-pôle sur la timeline"
+    },
+    {
+      "session_id": "2026-03-30T14-30-00",
+      "date": "2026-03-30",
+      "file": "sessions/2026-03-30T14-30-00.md",
+      "ideas_count": 11,
+      "summary": "Refonte simulateur : interactivité, multi-scénarios, passerelle vers projets réels"
     }
   ],
   "ideas_index": [
@@ -21,6 +28,17 @@
     { "name": "Filtre Intersection Pôle", "category": "differenciateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
     { "name": "Segmented Bar", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
     { "name": "Pole Trend", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
-    { "name": "Snapshot Comparateur", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" }
+    { "name": "Snapshot Comparateur", "category": "fidelisateur", "session_id": "2026-03-30T12-00-00", "status": "proposed" },
+    { "name": "Sliders Temps Réel", "category": "accelerateur", "session_id": "2026-03-30T14-30-00", "status": "implemented" },
+    { "name": "Rôle & Modules Déverrouillés", "category": "accelerateur", "session_id": "2026-03-30T14-30-00", "status": "implemented" },
+    { "name": "Auto-Suggest", "category": "accelerateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Template Scénario", "category": "accelerateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Arène Multi-Scénarios", "category": "differenciateur", "session_id": "2026-03-30T14-30-00", "status": "implemented" },
+    { "name": "Impact Timeline", "category": "differenciateur", "session_id": "2026-03-30T14-30-00", "status": "implemented" },
+    { "name": "Score de Faisabilité", "category": "differenciateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Skill-Gap Detector", "category": "differenciateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Historique & Replay", "category": "fidelisateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Scénario → Projet Réel", "category": "fidelisateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" },
+    { "name": "Export Décisionnel", "category": "fidelisateur", "session_id": "2026-03-30T14-30-00", "status": "proposed" }
   ]
 }

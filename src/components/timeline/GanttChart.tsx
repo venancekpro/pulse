@@ -18,9 +18,10 @@ interface GanttChartProps {
   projects: Project[];
   zoom: ZoomLevel;
   highlightedPole?: string | null;
+  phantomProjectId?: string | null;
 }
 
-export function GanttChart({ projects, zoom, highlightedPole }: GanttChartProps) {
+export function GanttChart({ projects, zoom, highlightedPole, phantomProjectId }: GanttChartProps) {
   const range = useMemo(
     () => computeTimelineRange(projects, zoom),
     [projects, zoom],
@@ -101,6 +102,7 @@ export function GanttChart({ projects, zoom, highlightedPole }: GanttChartProps)
               widthPercent={widthPercent}
               rowIndex={rowIndex}
               highlightedPole={highlightedPole}
+              isPhantom={project.id === phantomProjectId}
             />
           ))}
         </div>

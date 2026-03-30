@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PULSE — Gestion de charge d'equipe intelligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'surface': { card: '#FFFFFF', sidebar: '#F5F5F7', input: '#F5F5F7', hover: '#E8E8ED', dark: '#1D1D1F', 'dark-2': '#2C2C2E' },
+            'accent': { primary: '#007AFF', 'primary-hover': '#0056CC', secondary: '#5856D6', coral: '#5AC8FA' },
+            'txt': { primary: '#1D1D1F', secondary: '#6E6E73', muted: '#8E8E93', light: '#AEAEB2' },
+            'bdr': { DEFAULT: '#D1D1D6', light: '#E5E5EA', focus: '#007AFF' },
+            'success': '#34C759',
+            'warning': '#FF9F0A',
+            'error': '#FF3B30',
+          },
+          fontFamily: {
+            heading: ['"SF Pro Display"', '"DM Sans"', 'system-ui', 'sans-serif'],
+            body: ['"SF Pro Text"', '"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          borderRadius: {
+            'xl': '16px',
+            '2xl': '20px',
+            '3xl': '24px',
+          },
+          boxShadow: {
+            'card': '0 2px 16px rgba(0,0,0,0.04)',
+            'card-hover': '0 4px 24px rgba(31,38,135,0.08)',
+            'elevated': '0 8px 32px rgba(31,38,135,0.10)',
+            'accent': '0 2px 12px rgba(0,122,255,0.15)',
+            'dark-card': '0 4px 24px rgba(0,0,0,0.15)',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: #1A1A2E;
+      background: linear-gradient(145deg, #F5F5F7 0%, #E8E8ED 50%, #F5F5F7 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+    }
+    .font-heading { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 700; }
+
+    /* Animations */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slide-in-left {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slide-in-right {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0,122,255,0.15); }
+      50% { box-shadow: 0 0 40px rgba(0,122,255,0.25); }
+    }
+    .animate-fade-up { animation: fade-up 0.8s ease-out forwards; }
+    .animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
+    .animate-slide-left { animation: slide-in-left 0.8s ease-out forwards; }
+    .animate-slide-right { animation: slide-in-right 0.8s ease-out forwards; }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+    .delay-500 { animation-delay: 500ms; }
+    .delay-600 { animation-delay: 600ms; }
+
+    /* Observer-driven animations */
+    .observe { opacity: 0; }
+    .observe.visible { opacity: 1; }
+    .observe.visible.fade-up { animation: fade-up 0.8s ease-out forwards; }
+    .observe.visible.slide-left { animation: slide-in-left 0.8s ease-out forwards; }
+    .observe.visible.slide-right { animation: slide-in-right 0.8s ease-out forwards; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ========================================
+       APPLE LIQUID GLASS DESIGN SYSTEM
+       Low blur, bright borders, inner glow,
+       specular highlights via ::after
+       ======================================== */
+
+    .liquid-glass {
+      position: relative;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(2px) saturate(180%);
+      -webkit-backdrop-filter: blur(2px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 1.25rem;
+      box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.12),
+        inset 0 2px 16px rgba(255, 255, 255, 0.25);
+      isolation: isolate;
+    }
+    .liquid-glass::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .liquid-liquid-glass-strong {
+      position: relative;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(4px) saturate(200%);
+      -webkit-backdrop-filter: blur(4px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 1.25rem;
+      box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.15),
+        inset 0 3px 20px rgba(255, 255, 255, 0.3);
+      isolation: isolate;
+    }
+    .liquid-liquid-glass-strong::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 45%, rgba(255,255,255,0.08) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .liquid-liquid-glass-subtle {
+      position: relative;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(1px) saturate(160%);
+      -webkit-backdrop-filter: blur(1px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 1.25rem;
+      box-shadow:
+        0 4px 16px rgba(31, 38, 135, 0.06),
+        inset 0 1px 8px rgba(255, 255, 255, 0.15);
+    }
+
+    .liquid-liquid-glass-dark {
+      position: relative;
+      background: rgba(15, 15, 30, 0.55);
+      backdrop-filter: blur(4px) saturate(180%);
+      -webkit-backdrop-filter: blur(4px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.25rem;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      isolation: isolate;
+    }
+    .liquid-liquid-glass-dark::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .liquid-liquid-glass-nav {
+      background: rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(2px) saturate(180%);
+      -webkit-backdrop-filter: blur(2px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .liquid-liquid-glass-inner {
+      position: relative;
+      background: rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(1px) saturate(160%);
+      -webkit-backdrop-filter: blur(1px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 0.75rem;
+      box-shadow:
+        0 2px 8px rgba(31, 38, 135, 0.06),
+        inset 0 1px 6px rgba(255, 255, 255, 0.2);
+    }
+
+    .liquid-liquid-glass-badge {
+      position: relative;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(2px) saturate(180%);
+      -webkit-backdrop-filter: blur(2px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow:
+        0 2px 8px rgba(31, 38, 135, 0.06),
+        inset 0 1px 4px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Nav active — liquid glass pill */
+    .nav-link-active {
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(2px) saturate(180%);
+      -webkit-backdrop-filter: blur(2px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      box-shadow:
+        0 4px 12px rgba(31, 38, 135, 0.08),
+        inset 0 1px 8px rgba(255, 255, 255, 0.25);
+    }
+    .nav-link-active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    /* Sidebar active — liquid glass */
+    .sidebar-active {
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(2px) saturate(180%);
+      -webkit-backdrop-filter: blur(2px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 8px;
+      box-shadow:
+        0 2px 8px rgba(31, 38, 135, 0.06),
+        inset 0 1px 6px rgba(255, 255, 255, 0.2);
+    }
+    .sidebar-active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 55%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+    }
+
+    /* Card interactive */
+    .card-interactive {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-interactive:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 12px 40px rgba(31, 38, 135, 0.15),
+        inset 0 2px 20px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Dashboard mockup */
+    .mockup-shadow {
+      box-shadow:
+        0 16px 48px rgba(31, 38, 135, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- ============================================ -->
+  <!-- NAVBAR -->
+  <!-- ============================================ -->
+  <nav class="fixed top-0 inset-x-0 z-50 liquid-glass-nav">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3">
+        <div class="size-9 rounded-xl bg-accent-primary flex items-center justify-center shadow-card">
+          <svg class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <span class="text-xl font-bold text-txt-primary tracking-tight">PULSE</span>
+      </a>
+
+      <!-- Nav links (desktop) -->
+      <div class="hidden md:flex items-center gap-2">
+        <a href="#features" class="nav-link-active text-sm font-medium text-txt-primary px-4 py-2 transition-all duration-200">Fonctionnalites</a>
+        <a href="#preview" class="text-sm font-medium text-txt-secondary hover:text-txt-primary px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200">Apercu</a>
+        <a href="#stats" class="text-sm font-medium text-txt-secondary hover:text-txt-primary px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200">En chiffres</a>
+        <a href="#team" class="text-sm font-medium text-txt-secondary hover:text-txt-primary px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200">Equipe</a>
+      </div>
+
+      <!-- CTA -->
+      <div class="flex items-center gap-3">
+        <a href="/login" class="hidden sm:inline-flex text-sm font-semibold text-txt-secondary hover:text-txt-primary transition-colors">
+          Connexion
+        </a>
+        <a href="/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-primary text-white font-semibold text-sm shadow-sm hover:bg-accent-primary-hover hover:shadow-card active:scale-[0.98] transition-all duration-200">
+          Demarrer
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================================ -->
+  <!-- HERO -->
+  <!-- ============================================ -->
+  <section class="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+
+
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6">
+      <div class="max-w-3xl mx-auto text-center">
+        <!-- Badge -->
+        <div class="animate-fade-up inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass-badge shadow-card mb-8">
+          <span class="size-2 rounded-full bg-success animate-pulse"></span>
+          <span class="text-xs font-medium text-txt-secondary">Gestion de charge d'equipe — SDIVT / CIE</span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="animate-fade-up delay-100 font-heading text-5xl md:text-6xl lg:text-7xl text-txt-primary leading-tight">
+          Visualisez la charge,<br/>
+          <span class="gradient-text">anticipez l'impact</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="animate-fade-up delay-200 mt-6 text-lg md:text-xl text-txt-secondary max-w-2xl mx-auto leading-relaxed">
+          PULSE vous donne une vision claire de la charge de votre equipe, simule l'impact de nouveaux projets et vous aide a prendre les bonnes decisions d'affectation.
+        </p>
+
+        <!-- CTAs -->
+        <div class="animate-fade-up delay-300 mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/login" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-accent-primary text-white font-semibold shadow-sm hover:bg-accent-primary-hover hover:shadow-card active:scale-[0.98] transition-all duration-200 text-base">
+            Acceder au dashboard
+            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </a>
+          <a href="#features" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl glass text-txt-primary font-semibold shadow-card hover:shadow-card-hover hover:bg-white/70 active:scale-[0.98] transition-all duration-200 text-base">
+            Decouvrir les fonctionnalites
+          </a>
+        </div>
+      </div>
+
+      <!-- Dashboard Mockup -->
+      <div class="animate-fade-up delay-500 mt-16 md:mt-24 max-w-5xl mx-auto">
+        <div class="mockup-shadow rounded-2xl overflow-hidden liquid-glass-strong">
+          <!-- Mockup toolbar -->
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-white/40">
+            <div class="flex gap-1.5">
+              <div class="size-3 rounded-full bg-error/60"></div>
+              <div class="size-3 rounded-full bg-warning/60"></div>
+              <div class="size-3 rounded-full bg-success/60"></div>
+            </div>
+            <div class="flex-1 mx-12">
+              <div class="h-6 rounded-lg border border-white/50 max-w-md mx-auto flex items-center justify-center bg-white/10">
+                <span class="text-[10px] text-txt-muted">pulse.cie.ci/dashboard</span>
+              </div>
+            </div>
+          </div>
+          <!-- Mockup content -->
+          <div class="flex">
+            <!-- Mini sidebar -->
+            <div class="hidden md:flex w-52 border-r border-white/30 flex-col p-3 gap-1">
+              <div class="flex items-center gap-2 px-3 h-10 mb-4">
+                <div class="size-7 rounded-lg bg-accent-primary flex items-center justify-center">
+                  <svg class="size-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <span class="text-xs font-bold text-txt-primary">PULSE</span>
+              </div>
+              <div class="sidebar-active flex items-center gap-2 px-3 py-2 rounded-lg text-txt-primary text-[11px] font-medium">
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+              </div>
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-txt-muted text-[11px]">
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Equipe
+              </div>
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-txt-muted text-[11px]">
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                Projets
+              </div>
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-txt-muted text-[11px]">
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Simulateur
+              </div>
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-txt-muted text-[11px]">
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                Timeline
+              </div>
+            </div>
+            <!-- Main content area -->
+            <div class="flex-1 p-4 md:p-6">
+              <!-- KPI Row -->
+              <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="liquid-glass-inner rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                  <div class="size-9 rounded-lg bg-accent-primary/15 backdrop-blur-sm flex items-center justify-center shrink-0">
+                    <svg class="size-4 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-txt-muted">Membres</p>
+                    <p class="text-lg font-bold text-txt-primary">24</p>
+                  </div>
+                </div>
+                <div class="liquid-glass-inner rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                  <div class="size-9 rounded-lg bg-[#AF52DE]/15 backdrop-blur-sm flex items-center justify-center shrink-0">
+                    <svg class="size-4 text-[#AF52DE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-txt-muted">Projets actifs</p>
+                    <p class="text-lg font-bold text-txt-primary">12</p>
+                  </div>
+                </div>
+                <div class="liquid-glass-inner rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                  <div class="size-9 rounded-lg bg-accent-coral/15 backdrop-blur-sm flex items-center justify-center shrink-0">
+                    <svg class="size-4 text-accent-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-txt-muted">Surcharges</p>
+                    <p class="text-lg font-bold text-error">3</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Chart area -->
+              <div class="liquid-glass-inner rounded-xl p-4 shadow-sm mb-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-heading text-sm text-txt-primary">Charge par pole</h3>
+                  <span class="text-[10px] text-txt-muted px-2 py-0.5 rounded-full border border-bdr-light">Mars 2026</span>
+                </div>
+                <!-- Mini bar chart -->
+                <div class="flex items-end gap-2 h-24">
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-accent-primary rounded-t-md" style="height: 70%"></div>
+                    <span class="text-[8px] text-txt-muted">Front</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-[#AF52DE] rounded-t-md" style="height: 85%"></div>
+                    <span class="text-[8px] text-txt-muted">Back</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-accent-secondary rounded-t-md" style="height: 55%"></div>
+                    <span class="text-[8px] text-txt-muted">DevOps</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-accent-coral rounded-t-md" style="height: 40%"></div>
+                    <span class="text-[8px] text-txt-muted">UX</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Team table mini -->
+              <div class="liquid-glass-inner rounded-xl shadow-sm overflow-hidden">
+                <div class="px-4 py-2 border-b border-white/30">
+                  <h3 class="font-heading text-sm text-txt-primary">Equipe</h3>
+                </div>
+                <div class="divide-y divide-bdr-light/50">
+                  <div class="flex items-center gap-3 px-4 py-2">
+                    <div class="size-6 rounded-full bg-accent-primary/10 flex items-center justify-center text-[8px] font-bold text-accent-primary">AK</div>
+                    <span class="text-[11px] font-medium text-txt-primary flex-1">Amadou Kone</span>
+                    <span class="text-[9px] text-txt-muted">Backend</span>
+                    <div class="w-16 h-1.5 rounded-full bg-surface-hover overflow-hidden">
+                      <div class="h-full rounded-full bg-success" style="width: 55%"></div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 px-4 py-2">
+                    <div class="size-6 rounded-full bg-[#AF52DE]/10 flex items-center justify-center text-[8px] font-bold text-[#AF52DE]">FT</div>
+                    <span class="text-[11px] font-medium text-txt-primary flex-1">Fatou Traore</span>
+                    <span class="text-[9px] text-txt-muted">Frontend</span>
+                    <div class="w-16 h-1.5 rounded-full bg-surface-hover overflow-hidden">
+                      <div class="h-full rounded-full bg-accent-coral" style="width: 82%"></div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 px-4 py-2">
+                    <div class="size-6 rounded-full bg-accent-secondary/10 flex items-center justify-center text-[8px] font-bold text-accent-secondary">YD</div>
+                    <span class="text-[11px] font-medium text-txt-primary flex-1">Yao Dubois</span>
+                    <span class="text-[9px] text-txt-muted">DevOps</span>
+                    <div class="w-16 h-1.5 rounded-full bg-surface-hover overflow-hidden">
+                      <div class="h-full rounded-full bg-error" style="width: 105%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- LOGOS / TRUST BAR -->
+  <!-- ============================================ -->
+  <section class="py-12 liquid-glass-subtle">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <p class="text-sm text-txt-muted mb-6">Concu pour le Service Digital & Innovation de la CIE</p>
+      <div class="flex items-center justify-center gap-12 opacity-40">
+        <span class="text-2xl font-bold text-txt-primary tracking-tight">CIE</span>
+        <span class="text-xl font-bold text-txt-primary tracking-tight">SDIVT</span>
+        <span class="text-xl font-bold text-txt-primary tracking-tight">DCTD</span>
+        <span class="text-lg font-bold text-txt-primary tracking-tight">EECI</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- FEATURES -->
+  <!-- ============================================ -->
+  <section id="features" class="py-20 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <!-- Section header -->
+      <div class="text-center max-w-2xl mx-auto mb-16 observe fade-up">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass-badge shadow-sm text-xs font-medium text-txt-secondary mb-6">
+          <svg class="size-3.5 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Fonctionnalites
+        </span>
+        <h2 class="font-heading text-3xl md:text-4xl text-txt-primary">
+          Tout pour piloter<br/><span class="gradient-text">la charge de votre equipe</span>
+        </h2>
+        <p class="mt-4 text-txt-secondary text-lg">
+          Des outils puissants et intuitifs pour visualiser, simuler et optimiser les affectations de votre equipe.
+        </p>
+      </div>
+
+      <!-- Feature grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1: Dashboard -->
+        <div class="observe fade-up liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Dashboard en temps reel</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            KPIs, graphiques de charge par pole, alertes de surcharge et activite recente en un coup d'oeil.
+          </p>
+        </div>
+
+        <!-- Feature 2: Team -->
+        <div class="observe fade-up delay-100 liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-[#AF52DE]/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-[#AF52DE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Gestion d'equipe</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Profils membres, competences, roles transversaux, detection de SPOF et scores de fiabilite.
+          </p>
+        </div>
+
+        <!-- Feature 3: Simulator -->
+        <div class="observe fade-up delay-200 liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-accent-coral/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-accent-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Simulateur d'impact</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Simulez l'ajout d'un projet et visualisez l'impact sur chaque membre avant de valider l'affectation.
+          </p>
+        </div>
+
+        <!-- Feature 4: Timeline -->
+        <div class="observe fade-up delay-100 liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Timeline & Gantt</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Vue Gantt interactive des projets avec zoom temporel, popover de detail et vue par pole.
+          </p>
+        </div>
+
+        <!-- Feature 5: Skills -->
+        <div class="observe fade-up delay-200 liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-accent-coral/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-accent-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Competences & SPOF</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Matrice de competences, detection des points de fragilite et suggestions de quick-swap en cas d'absence.
+          </p>
+        </div>
+
+        <!-- Feature 6: Reports -->
+        <div class="observe fade-up delay-300 liquid-glass rounded-2xl shadow-card p-6 card-interactive">
+          <div class="size-12 rounded-xl bg-accent-secondary/10 flex items-center justify-center mb-4">
+            <svg class="size-6 text-accent-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Rapports & Analytics</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Rapports de charge, historiques, tendances et exports pour le reporting manageral.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- HOW IT WORKS -->
+  <!-- ============================================ -->
+  <section class="py-20 md:py-32 liquid-glass-subtle relative overflow-hidden">
+    <div class="relative z-10 max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16 observe fade-up">
+        <h2 class="font-heading text-3xl md:text-4xl text-txt-primary">
+          Comment ca <span class="gradient-text">fonctionne</span>
+        </h2>
+        <p class="mt-4 text-txt-secondary text-lg">
+          Trois etapes pour reprendre le controle de la charge de votre equipe.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="observe fade-up text-center">
+          <div class="size-16 rounded-2xl bg-accent-primary/10 flex items-center justify-center mx-auto mb-5 animate-pulse-glow">
+            <span class="font-heading text-2xl text-accent-primary">1</span>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Renseignez votre equipe</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Ajoutez les membres, leurs poles, competences et roles transversaux. PULSE calcule automatiquement la charge.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="observe fade-up delay-200 text-center">
+          <div class="size-16 rounded-2xl bg-accent-coral/10 flex items-center justify-center mx-auto mb-5">
+            <span class="font-heading text-2xl text-accent-coral">2</span>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Affectez les projets</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Creez vos projets avec modules, deadlines et assignez les membres avec leur pourcentage d'allocation.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="observe fade-up delay-400 text-center">
+          <div class="size-16 rounded-2xl bg-accent-secondary/10 flex items-center justify-center mx-auto mb-5">
+            <span class="font-heading text-2xl text-accent-secondary">3</span>
+          </div>
+          <h3 class="text-lg font-semibold text-txt-primary mb-2">Simulez et decidez</h3>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Utilisez le simulateur pour tester l'impact de nouveaux projets. Comparez les scenarios et validez.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PREVIEW / SIMULATOR HIGHLIGHT -->
+  <!-- ============================================ -->
+  <section id="preview" class="py-20 md:py-32 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <!-- Left: Text -->
+        <div class="observe slide-left">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass-badge shadow-sm text-xs font-medium text-txt-secondary mb-6">
+            <svg class="size-3.5 text-accent-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Simulateur d'impact
+          </span>
+          <h2 class="font-heading text-3xl md:text-4xl text-txt-primary mb-4">
+            Testez avant<br/><span class="gradient-text">d'affecter</span>
+          </h2>
+          <p class="text-txt-secondary text-lg mb-8 leading-relaxed">
+            Le simulateur d'impact vous permet de visualiser les consequences d'une nouvelle affectation <strong>avant</strong> de la valider. Plus de surcharges par surprise.
+          </p>
+
+          <!-- Feature bullets -->
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="size-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="size-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-txt-primary">Comparaison avant/apres</p>
+                <p class="text-sm text-txt-secondary">Visualisez l'evolution de la charge de chaque membre impacte.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="size-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="size-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-txt-primary">Detection de conflits</p>
+                <p class="text-sm text-txt-secondary">Alertes automatiques sur les deadlines qui se chevauchent dans une fenetre de 14 jours.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="size-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="size-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-txt-primary">Recommandations intelligentes</p>
+                <p class="text-sm text-txt-secondary">PULSE suggere des reaffectations pour equilibrer la charge.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Simulator mockup card -->
+        <div class="observe slide-right">
+          <div class="liquid-glass-strong rounded-2xl shadow-card p-6 space-y-5">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <h3 class="font-heading text-xl text-txt-primary">Simulation #7</h3>
+              <span class="px-3 py-1 rounded-full bg-accent-primary/10 text-accent-primary text-xs font-medium">En cours</span>
+            </div>
+
+            <!-- Project info -->
+            <div class="liquid-glass-inner rounded-xl p-4">
+              <p class="text-xs text-txt-muted mb-1">Projet simule</p>
+              <p class="text-sm font-semibold text-txt-primary">Portail Client v2.0</p>
+              <div class="flex gap-4 mt-2">
+                <span class="text-xs text-txt-muted">Debut: 15 avril 2026</span>
+                <span class="text-xs text-txt-muted">Fin: 30 juin 2026</span>
+              </div>
+            </div>
+
+            <!-- Impact preview -->
+            <div class="space-y-3">
+              <p class="text-xs font-semibold text-txt-secondary uppercase tracking-wider">Impact sur l'equipe</p>
+
+              <!-- Member 1 -->
+              <div class="flex items-center gap-3">
+                <div class="size-8 rounded-full bg-accent-primary/10 flex items-center justify-center text-xs font-bold text-accent-primary">AK</div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-txt-primary">Amadou Kone</span>
+                    <span class="text-xs font-semibold text-success">55% → 75%</span>
+                  </div>
+                  <div class="h-2 rounded-full bg-surface-hover overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-success to-accent-secondary transition-all duration-500" style="width: 75%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Member 2 -->
+              <div class="flex items-center gap-3">
+                <div class="size-8 rounded-full bg-[#AF52DE]/10 flex items-center justify-center text-xs font-bold text-[#AF52DE]">FT</div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-txt-primary">Fatou Traore</span>
+                    <span class="text-xs font-semibold text-accent-coral">70% → 95%</span>
+                  </div>
+                  <div class="h-2 rounded-full bg-surface-hover overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-accent-secondary to-accent-coral transition-all duration-500" style="width: 95%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Member 3 — critical -->
+              <div class="flex items-center gap-3">
+                <div class="size-8 rounded-full bg-error/10 flex items-center justify-center text-xs font-bold text-error">YD</div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-txt-primary">Yao Dubois</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-semibold text-error">85% → 115%</span>
+                      <svg class="size-3.5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                    </div>
+                  </div>
+                  <div class="h-2 rounded-full bg-surface-hover overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-accent-coral to-error transition-all duration-500" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Warning -->
+            <div class="flex items-start gap-3 bg-error/5 rounded-xl p-3 border border-error/10">
+              <svg class="size-5 text-error shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              <div>
+                <p class="text-xs font-semibold text-error">Surcharge detectee</p>
+                <p class="text-[11px] text-txt-secondary mt-0.5">Yao Dubois depasse 100% de charge. Envisagez une reaffectation du module API.</p>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-2">
+              <button class="flex-1 px-4 py-2.5 rounded-xl bg-accent-primary text-white font-semibold text-sm shadow-md hover:bg-accent-primary-hover transition-all">
+                Valider l'affectation
+              </button>
+              <button class="flex-1 px-4 py-2.5 rounded-xl border border-bdr bg-white text-txt-primary font-semibold text-sm hover:bg-surface-hover transition-all">
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- STATS -->
+  <!-- ============================================ -->
+  <section id="stats" class="py-20 md:py-28 liquid-glass-dark text-white relative overflow-hidden">
+    <div class="relative z-10 max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16 observe fade-up">
+        <h2 class="font-heading text-3xl md:text-4xl">
+          PULSE en <span class="text-accent-secondary">chiffres</span>
+        </h2>
+        <p class="mt-4 text-white/60 text-lg">
+          Des resultats concrets pour la gestion de la charge d'equipe.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="observe fade-up text-center">
+          <p class="font-heading text-4xl md:text-5xl text-accent-secondary">24</p>
+          <p class="text-sm text-white/50 mt-2">Membres suivis</p>
+        </div>
+        <div class="observe fade-up delay-100 text-center">
+          <p class="font-heading text-4xl md:text-5xl text-accent-secondary">12</p>
+          <p class="text-sm text-white/50 mt-2">Projets actifs</p>
+        </div>
+        <div class="observe fade-up delay-200 text-center">
+          <p class="font-heading text-4xl md:text-5xl text-accent-secondary">4</p>
+          <p class="text-sm text-white/50 mt-2">Poles d'equipe</p>
+        </div>
+        <div class="observe fade-up delay-300 text-center">
+          <p class="font-heading text-4xl md:text-5xl text-accent-secondary">0</p>
+          <p class="text-sm text-white/50 mt-2">Surcharges non-detectees</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- TEAM / ROLES -->
+  <!-- ============================================ -->
+  <section id="team" class="py-20 md:py-32 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16 observe fade-up">
+        <h2 class="font-heading text-3xl md:text-4xl text-txt-primary">
+          Concu pour les <span class="gradient-text">equipes tech</span>
+        </h2>
+        <p class="mt-4 text-txt-secondary text-lg">
+          PULSE comprend la realite des equipes de developpement : poles, roles transversaux, competences croisees et charge variable.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Pole cards -->
+        <div class="observe fade-up liquid-glass rounded-2xl shadow-card p-5 text-center card-interactive">
+          <div class="size-14 rounded-2xl bg-accent-primary/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="size-7 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M7 8l-4 4 4 4M17 8l4 4-4 4M14 4l-4 16"/></svg>
+          </div>
+          <h3 class="font-semibold text-txt-primary mb-1">Frontend</h3>
+          <p class="text-xs text-txt-muted">React, Next.js, UI/UX implementation</p>
+          <div class="mt-3 flex justify-center -space-x-2">
+            <div class="size-7 rounded-full bg-accent-primary/20 border-2 border-white text-[8px] font-bold text-accent-primary flex items-center justify-center">AK</div>
+            <div class="size-7 rounded-full bg-accent-primary/20 border-2 border-white text-[8px] font-bold text-accent-primary flex items-center justify-center">MT</div>
+            <div class="size-7 rounded-full bg-accent-primary/20 border-2 border-white text-[8px] font-bold text-accent-primary flex items-center justify-center">+4</div>
+          </div>
+        </div>
+
+        <div class="observe fade-up delay-100 liquid-glass rounded-2xl shadow-card p-5 text-center card-interactive">
+          <div class="size-14 rounded-2xl bg-[#AF52DE]/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="size-7 text-[#AF52DE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          </div>
+          <h3 class="font-semibold text-txt-primary mb-1">Backend</h3>
+          <p class="text-xs text-txt-muted">APIs, bases de donnees, services</p>
+          <div class="mt-3 flex justify-center -space-x-2">
+            <div class="size-7 rounded-full bg-[#AF52DE]/20 border-2 border-white text-[8px] font-bold text-[#AF52DE] flex items-center justify-center">FT</div>
+            <div class="size-7 rounded-full bg-[#AF52DE]/20 border-2 border-white text-[8px] font-bold text-[#AF52DE] flex items-center justify-center">KL</div>
+            <div class="size-7 rounded-full bg-[#AF52DE]/20 border-2 border-white text-[8px] font-bold text-[#AF52DE] flex items-center justify-center">+5</div>
+          </div>
+        </div>
+
+        <div class="observe fade-up delay-200 liquid-glass rounded-2xl shadow-card p-5 text-center card-interactive">
+          <div class="size-14 rounded-2xl bg-accent-secondary/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="size-7 text-accent-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <h3 class="font-semibold text-txt-primary mb-1">DevOps</h3>
+          <p class="text-xs text-txt-muted">CI/CD, cloud, infrastructure</p>
+          <div class="mt-3 flex justify-center -space-x-2">
+            <div class="size-7 rounded-full bg-accent-secondary/20 border-2 border-white text-[8px] font-bold text-accent-secondary flex items-center justify-center">YD</div>
+            <div class="size-7 rounded-full bg-accent-secondary/20 border-2 border-white text-[8px] font-bold text-accent-secondary flex items-center justify-center">+2</div>
+          </div>
+        </div>
+
+        <div class="observe fade-up delay-300 liquid-glass rounded-2xl shadow-card p-5 text-center card-interactive">
+          <div class="size-14 rounded-2xl bg-accent-coral/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="size-7 text-accent-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          </div>
+          <h3 class="font-semibold text-txt-primary mb-1">UX / UI</h3>
+          <p class="text-xs text-txt-muted">Design, prototypes, tests utilisateurs</p>
+          <div class="mt-3 flex justify-center -space-x-2">
+            <div class="size-7 rounded-full bg-accent-coral/20 border-2 border-white text-[8px] font-bold text-accent-coral flex items-center justify-center">SN</div>
+            <div class="size-7 rounded-full bg-accent-coral/20 border-2 border-white text-[8px] font-bold text-accent-coral flex items-center justify-center">+3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- CTA FINAL -->
+  <!-- ============================================ -->
+  <section class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="observe fade-up liquid-glass-strong rounded-3xl shadow-elevated p-8 md:p-12 text-center relative overflow-hidden">
+        <div class="relative z-10">
+          <div class="size-16 rounded-2xl bg-accent-primary/10 flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+            <svg class="size-8 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <h2 class="font-heading text-3xl md:text-4xl text-txt-primary mb-4">
+            Pret a optimiser<br/>la charge de votre equipe ?
+          </h2>
+          <p class="text-txt-secondary text-lg mb-8 max-w-xl mx-auto">
+            Commencez a utiliser PULSE des maintenant et ne laissez plus la surcharge impacter vos projets et votre equipe.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/login" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-accent-primary text-white font-semibold shadow-sm hover:bg-accent-primary-hover hover:shadow-card active:scale-[0.98] transition-all duration-200 text-base">
+              Acceder a PULSE
+              <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+            <a href="mailto:sdivt@cie.ci" class="inline-flex items-center gap-2 text-sm font-semibold text-txt-secondary hover:text-accent-primary transition-colors">
+              <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+              Contacter l'equipe
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- FOOTER -->
+  <!-- ============================================ -->
+  <footer class="py-10 liquid-glass-subtle">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <div class="size-8 rounded-lg bg-accent-primary flex items-center justify-center">
+            <svg class="size-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <span class="text-sm font-bold text-txt-primary">PULSE</span>
+          <span class="text-xs text-txt-muted">v1.0</span>
+        </div>
+
+        <!-- Links -->
+        <div class="flex items-center gap-6 text-sm text-txt-muted">
+          <span>CIE - Compagnie Ivoirienne d'Electricite</span>
+          <span class="hidden md:inline">|</span>
+          <span>SDIVT - Service Digital & Innovation</span>
+        </div>
+
+        <!-- Copyright -->
+        <p class="text-xs text-txt-light">
+          &copy; 2026 PULSE. Usage interne.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================ -->
+  <!-- SCROLL ANIMATIONS OBSERVER -->
+  <!-- ============================================ -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.observe').forEach(el => observer.observe(el));
+    });
+  </script>
+
+</body>
+</html>
