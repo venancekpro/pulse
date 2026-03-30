@@ -43,10 +43,10 @@ export function SkillsMatrix() {
                 return (
                   <td key={skillName} className="px-2 py-2 text-center">
                     <span
-                      className="inline-block h-6 w-6 rounded text-xs font-medium leading-6"
+                      className="inline-block rounded px-2 py-0.5 text-xs font-medium whitespace-nowrap"
                       style={{ backgroundColor: `${SKILL_LEVEL_COLORS[skill.level]}20`, color: SKILL_LEVEL_COLORS[skill.level] }}
                       title={`${skill.name}: ${SKILL_LEVEL_LABELS[skill.level]}`}
-                    >{skill.level}</span>
+                    >{SKILL_LEVEL_LABELS[skill.level]}</span>
                   </td>
                 );
               })}

@@ -11,7 +11,7 @@ interface SPOFAlertListProps {
 
 export function SPOFAlertList({ alerts }: SPOFAlertListProps) {
   if (alerts.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground"><p className="text-sm">Aucun point de défaillance unique détecté</p></div>;
+    return <div className="text-center py-4 text-muted-foreground"><p className="text-sm">Aucun point de défaillance unique détecté</p></div>;
   }
 
   return (

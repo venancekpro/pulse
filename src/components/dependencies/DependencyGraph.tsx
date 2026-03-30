@@ -7,23 +7,23 @@ interface DependencyGraphProps {
 
 export function DependencyGraph({ edges }: DependencyGraphProps) {
   if (edges.length === 0) {
-    return <div className="text-sm text-muted-foreground text-center py-8">Aucune donnée</div>;
+    return <div className="text-sm text-muted-foreground text-center py-4">Aucune donnée</div>;
   }
 
   const members = [...new Map(edges.map((e) => [e.source, e.sourceName])).entries()];
   const projects = [...new Map(edges.map((e) => [e.target, e.targetName])).entries()];
 
-  const width = 800;
-  const memberSpacing = Math.max(50, Math.min(80, 500 / members.length));
-  const projectSpacing = Math.max(50, Math.min(80, 500 / projects.length));
+  const width = 600;
+  const memberSpacing = Math.max(55, Math.min(80, 500 / members.length));
+  const projectSpacing = Math.max(55, Math.min(80, 500 / projects.length));
   const height = Math.max(members.length * memberSpacing, projects.length * projectSpacing) + 60;
 
-  const memberX = 120;
-  const projectX = width - 120;
+  const memberX = 80;
+  const projectX = width - 80;
 
   return (
-    <div className="overflow-x-auto">
-      <svg width={width} height={height} className="font-sans">
+    <div className="w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ minHeight: 300 }} className="font-sans">
         {edges.map((edge, i) => {
           const mIdx = members.findIndex(([id]) => id === edge.source);
           const pIdx = projects.findIndex(([id]) => id === edge.target);
@@ -39,8 +39,8 @@ export function DependencyGraph({ edges }: DependencyGraphProps) {
           const hasSolo = edges.some((e) => e.source === id && e.isSoleMember);
           return (
             <g key={id}>
-              <circle cx={memberX} cy={y} r={16} fill={hasSolo ? "#DC262620" : "#3B82F620"} stroke={hasSolo ? "#DC2626" : "#3B82F6"} strokeWidth={1.5} />
-              <text x={memberX} y={y + 4} textAnchor="middle" className="text-[10px] fill-foreground">{name.split(" ")[0]}</text>
+              <rect x={memberX - 55} y={y - 16} width={110} height={32} rx={6} fill={hasSolo ? "#DC262620" : "#3B82F620"} stroke={hasSolo ? "#DC2626" : "#3B82F6"} strokeWidth={1.5} />
+              <text x={memberX} y={y + 5} textAnchor="middle" className="text-[13px] font-medium fill-foreground">{name.split(" ")[0]}</text>
             </g>
           );
         })}
@@ -49,8 +49,8 @@ export function DependencyGraph({ edges }: DependencyGraphProps) {
           const hasSolo = edges.some((e) => e.target === id && e.isSoleMember);
           return (
             <g key={id}>
-              <rect x={projectX - 50} y={y - 14} width={100} height={28} rx={4} fill={hasSolo ? "#DC262610" : "#10B98110"} stroke={hasSolo ? "#DC2626" : "#10B981"} strokeWidth={1} />
-              <text x={projectX} y={y + 4} textAnchor="middle" className="text-[10px] fill-foreground">{name.length > 12 ? name.slice(0, 12) + "..." : name}</text>
+              <rect x={projectX - 55} y={y - 16} width={110} height={32} rx={6} fill={hasSolo ? "#DC262610" : "#10B98110"} stroke={hasSolo ? "#DC2626" : "#10B981"} strokeWidth={1} />
+              <text x={projectX} y={y + 5} textAnchor="middle" className="text-[13px] font-medium fill-foreground">{name.length > 12 ? name.slice(0, 12) + "..." : name}</text>
             </g>
           );
         })}
